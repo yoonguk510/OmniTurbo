@@ -15,17 +15,17 @@
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "latest",
+    "@prisma/adapter-pg": "^7.2.0",
     "@prisma/client": "^7.2.0",
     "dotenv": "^17.2.3",
-    "pg": "latest",
+    "pg": "^8.16.3",
     "prisma-zod-generator": "^2.1.2",
     "zod": "^4.3.5"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "@types/pg": "latest",
-    "prisma": "latest",
-    "typescript": "latest"
+    "@types/node": "^25.0.6",
+    "@types/pg": "^8.16.0",
+    "prisma": "^7.2.0",
+    "typescript": "^5.9.3"
   }
 }
