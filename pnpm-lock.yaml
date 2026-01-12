@@ -50,9 +50,6 @@ importers:
       '@orpc/zod':
         specifier: ^1.13.2
         version: 1.13.2(@orpc/contract@1.13.2)(@orpc/server@1.13.2)(zod@4.3.5)
-      '@repo/api':
-        specifier: workspace:*
-        version: link:../../packages/api
       '@repo/contract':
         specifier: workspace:^
         version: link:../../packages/contract
@@ -157,9 +154,6 @@ importers:
         specifier: ^19.1.0
         version: 19.2.0(react@19.2.0)
     devDependencies:
-      '@repo/api':
-        specifier: workspace:*
-        version: link:../../packages/api
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config

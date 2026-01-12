@@ -24,7 +24,6 @@
     "@orpc/nest": "^1.13.2",
     "@orpc/server": "^1.13.2",
     "@orpc/zod": "^1.13.2",
-    "@repo/api": "workspace:*",
     "@repo/contract": "workspace:^",
     "@repo/database": "workspace:^",
     "bcrypt": "^6.0.0",
