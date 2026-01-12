@@ -17,7 +17,7 @@ export const profileContract = {
       summary: 'Get Current User Profile',
       tags: ['User'],
     })
-    .input(z.void())
+    .input(z.object({}))
     .output(ApiResponseSchema(UserResponseSchema)),
 
   update: oc
