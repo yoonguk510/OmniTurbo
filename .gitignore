@@ -33,6 +33,7 @@ playwright-report/
 out/
 build
 dist
+openapi.json
 
 # IDEs and editors
 /.idea

@@ -8,10 +8,16 @@ const LoginInputSchema = z.object({
   password: z.string().min(6),
 });
 
+const UserResponseSchema = UserModelSchema.omit({
+  password: true,
+  accounts: true,
+  sessions: true,
+});
+
 const LoginResponseSchema = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
-  user: UserModelSchema,
+  user: UserResponseSchema,
 });
 
 const RegisterInputSchema = UserCreateInputObjectZodSchema.pick({
@@ -47,7 +53,7 @@ export const authContract = {
       tags: ['Auth'],
     })
     .input(RegisterInputSchema)
-    .output(ApiResponseSchema(UserModelSchema))
+    .output(ApiResponseSchema(UserResponseSchema))
     .errors({
       CONFLICT: {
         status: 409,

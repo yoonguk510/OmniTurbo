@@ -3,6 +3,12 @@ import { z } from 'zod';
 import { ApiResponseSchema } from '../common/api-response.schema.js';
 import { UserModelSchema, UserUpdateInputObjectZodSchema } from '@repo/database/schemas';
 
+const UserResponseSchema = UserModelSchema.omit({
+  password: true,
+  accounts: true,
+  sessions: true,
+});
+
 export const profileContract = {
   me: oc
     .route({
@@ -11,8 +17,8 @@ export const profileContract = {
       summary: 'Get Current User Profile',
       tags: ['User'],
     })
-    .input(z.void())
-    .output(ApiResponseSchema(UserModelSchema)),
+    .input(z.object({}))
+    .output(ApiResponseSchema(UserResponseSchema)),
 
   update: oc
     .route({
@@ -22,5 +28,5 @@ export const profileContract = {
       tags: ['User'],
     })
     .input(UserUpdateInputObjectZodSchema)
-    .output(ApiResponseSchema(UserModelSchema)),
+    .output(ApiResponseSchema(UserResponseSchema)),
 };
