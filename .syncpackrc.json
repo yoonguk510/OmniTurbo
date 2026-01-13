@@ -1,0 +1,10 @@
+{
+    "versionGroups": [
+      {
+        "label": "Internal monorepo packages",
+        "dependencies": ["@repo/**"],
+        "packages": ["**"],
+        "isIgnored": true
+      }
+    ]
+  }

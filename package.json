@@ -12,7 +12,9 @@
     "test:e2e": "turbo run test:e2e",
     "lint": "turbo run lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "ui": "pnpm --filter @repo/ui ui"
+    "ui": "pnpm --filter @repo/ui ui",
+    "list-mismatches": "pnpm dlx syncpack list-mismatches",
+    "fix-mismatches": "pnpm dlx syncpack fix-mismatches"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
