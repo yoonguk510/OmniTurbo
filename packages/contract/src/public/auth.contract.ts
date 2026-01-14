@@ -48,7 +48,11 @@ export const authContract = {
       tags: ['Auth'],
     })
     .input(LoginInputSchema)
-    .output(ApiResponseSchema(UserResponseSchema))
+    .output(ApiResponseSchema(z.object({
+      accessToken: z.string(),
+      refreshToken: z.string(),
+      user: UserResponseSchema,
+    })))
     .errors({
       UNAUTHORIZED: {
         status: 401,
@@ -89,8 +93,14 @@ export const authContract = {
       summary: 'Refresh Access Token',
       tags: ['Auth'],
     })
-    .input(z.void())
-    .output(ApiResponseSchema(z.void())) // Success implies cookies are updated
+    .input(z.object({
+        refreshToken: z.string()
+    }))
+    .output(ApiResponseSchema(z.object({
+      accessToken: z.string(),
+      refreshToken: z.string(),
+      user: UserResponseSchema,
+    }))) // Success implies cookies are updated
     .errors({
       UNAUTHORIZED: {
         status: 401,
@@ -106,7 +116,11 @@ export const authContract = {
       tags: ['Auth'],
     })
     .input(SSOInputSchema)
-    .output(ApiResponseSchema(UserResponseSchema)),
+    .output(ApiResponseSchema(z.object({
+      accessToken: z.string(),
+      refreshToken: z.string(),
+      user: UserResponseSchema,
+    }))),
 
   forgotPassword: oc
     .route({

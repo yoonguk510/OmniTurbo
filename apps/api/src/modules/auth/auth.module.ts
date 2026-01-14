@@ -5,18 +5,21 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { EmailModule } from '../email/email.module';
+import { DatabaseModule } from 'src/database/database.module';
 
 @Module({
   imports: [
+    DatabaseModule,
     PassportModule,
     JwtModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET') || 'dev-secret',
-        signOptions: { expiresIn: '1d' },
-      }),
       inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET') || 'dev-secret',
+        signOptions: { expiresIn: '15m' }, // Access token short life
+      }),
     }),
+    EmailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
