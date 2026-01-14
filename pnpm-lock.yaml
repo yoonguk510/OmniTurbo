@@ -165,12 +165,30 @@ importers:
 
   apps/web:
     dependencies:
+      '@orpc/client':
+        specifier: ^1.13.4
+        version: 1.13.4
+      '@orpc/tanstack-query':
+        specifier: ^1.13.4
+        version: 1.13.4(@orpc/client@1.13.4)(@tanstack/query-core@5.90.17)
+      '@repo/contract':
+        specifier: workspace:*
+        version: link:../../packages/contract
+      '@repo/database':
+        specifier: workspace:^
+        version: link:../../packages/database
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@tailwindcss/postcss':
         specifier: ^4.1.18
         version: 4.1.18
+      '@tanstack/react-query':
+        specifier: ^5.90.17
+        version: 5.90.17(react@19.2.3)
+      immer:
+        specifier: ^11.1.3
+        version: 11.1.3
       next:
         specifier: 16.0.10
         version: 16.0.10(react-dom@19.2.3)(react@19.2.3)
@@ -186,6 +204,12 @@ importers:
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
+      zustand:
+        specifier: ^5.0.10
+        version: 5.0.10(@types/react@19.2.8)(immer@11.1.3)(react@19.2.3)
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
@@ -2684,6 +2708,17 @@ packages:
       - '@opentelemetry/api'
     dev: false
 
+  /@orpc/client@1.13.4:
+    resolution: {integrity: sha512-s13GPMeoooJc5Th2EaYT5HMFtWG8S03DUVytYfJv8pIhP87RYKl94w52A36denH6r/B4LaAgBeC9nTAOslK+Og==}
+    dependencies:
+      '@orpc/shared': 1.13.4
+      '@orpc/standard-server': 1.13.4
+      '@orpc/standard-server-fetch': 1.13.4
+      '@orpc/standard-server-peer': 1.13.4
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+    dev: false
+
   /@orpc/contract@1.13.2:
     resolution: {integrity: sha512-td5ExzLPQ2y2zE9itgqod5gmC3WvCFIlkyJSNFRCRhff04PzokE9/hjqGhW5zsNgKuv4rcPYOrkh0e/YiyFndQ==}
     dependencies:
@@ -2816,6 +2851,18 @@ packages:
       type-fest: 5.3.1
     dev: false
 
+  /@orpc/shared@1.13.4:
+    resolution: {integrity: sha512-TYt9rLG/BUkNQBeQ6C1tEiHS/Seb8OojHgj9GlvqyjHJhMZx5qjsIyTW6RqLPZJ4U2vgK6x4Her36+tlFCKJug==}
+    peerDependencies:
+      '@opentelemetry/api': '>=1.9.0'
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
+    dependencies:
+      radash: 12.1.1
+      type-fest: 5.3.1
+    dev: false
+
   /@orpc/standard-server-aws-lambda@1.13.2:
     resolution: {integrity: sha512-Gkw72+b5eZKjsSJ5zT4vsnEbHww8An1hkkai4jmLvADtujQQMccjhWNTC7MKGBe1/M818plnfbhqmLx+2rU0IA==}
     dependencies:
@@ -2851,6 +2898,15 @@ packages:
       - '@opentelemetry/api'
     dev: false
 
+  /@orpc/standard-server-fetch@1.13.4:
+    resolution: {integrity: sha512-/zmKwnuxfAXbppJpgr1CMnQX3ptPlYcDzLz1TaVzz9VG/Xg58Ov3YhabS2Oi1utLVhy5t4kaCppUducAvoKN+A==}
+    dependencies:
+      '@orpc/shared': 1.13.4
+      '@orpc/standard-server': 1.13.4
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+    dev: false
+
   /@orpc/standard-server-node@1.13.2:
     resolution: {integrity: sha512-asWTGGQEcBKkpz6qEsn0Gfdsj0eZ4zDp/P89jJFuYEREwqsWMrZSiyEQNcCU0Q6UoLai+Wvil575L58i3Adgmg==}
     dependencies:
@@ -2870,10 +2926,40 @@ packages:
       - '@opentelemetry/api'
     dev: false
 
+  /@orpc/standard-server-peer@1.13.4:
+    resolution: {integrity: sha512-UfqnTLqevjCKUk4cmImOG8cQUwANpV1dp9e9u2O1ki6BRBsg/zlXFg6G2N6wP0zr9ayIiO1d2qJdH55yl/1BNw==}
+    dependencies:
+      '@orpc/shared': 1.13.4
+      '@orpc/standard-server': 1.13.4
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+    dev: false
+
   /@orpc/standard-server@1.13.2:
     resolution: {integrity: sha512-qjxKOvCg2mYBQMPdjEqQEDI+F/v6qm9zKMeFsfxnWKvPhDrPSEk8x40vdXlLbbpW6TCXpQikpycfdvq5H4Nb+Q==}
     dependencies:
       '@orpc/shared': 1.13.2
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+    dev: false
+
+  /@orpc/standard-server@1.13.4:
+    resolution: {integrity: sha512-ZOzgfVp6XUg+wVYw+gqesfRfGPtQbnBIrIiSnFMtZF+6ncmFJeF2Shc4RI2Guqc0Qz25juy8Ogo4tX3YqysOcg==}
+    dependencies:
+      '@orpc/shared': 1.13.4
+    transitivePeerDependencies:
+      - '@opentelemetry/api'
+    dev: false
+
+  /@orpc/tanstack-query@1.13.4(@orpc/client@1.13.4)(@tanstack/query-core@5.90.17):
+    resolution: {integrity: sha512-gCL/kh3kf6OUGKfXxSoOZpcX1jNYzxGfo/PkLQKX7ui4xiTbfWw3sCDF30sNS4I7yAOnBwDwJ3N2xzfkTftOBg==}
+    peerDependencies:
+      '@orpc/client': 1.13.4
+      '@tanstack/query-core': '>=5.80.2'
+    dependencies:
+      '@orpc/client': 1.13.4
+      '@orpc/shared': 1.13.4
+      '@tanstack/query-core': 5.90.17
     transitivePeerDependencies:
       - '@opentelemetry/api'
     dev: false
@@ -4637,6 +4723,19 @@ packages:
       '@tailwindcss/oxide': 4.1.18
       postcss: 8.5.6
       tailwindcss: 4.1.18
+    dev: false
+
+  /@tanstack/query-core@5.90.17:
+    resolution: {integrity: sha512-hDww+RyyYhjhUfoYQ4es6pbgxY7LNiPWxt4l1nJqhByjndxJ7HIjDxTBtfvMr5HwjYavMrd+ids5g4Rfev3lVQ==}
+    dev: false
+
+  /@tanstack/react-query@5.90.17(react@19.2.3):
+    resolution: {integrity: sha512-PGc2u9KLwohDUSchjW9MZqeDQJfJDON7y4W7REdNBgiFKxQy+Pf7eGjiFWEj5xPqKzAeHYdAb62IWI1a9UJyGQ==}
+    peerDependencies:
+      react: ^18 || ^19
+    dependencies:
+      '@tanstack/query-core': 5.90.17
+      react: 19.2.3
     dev: false
 
   /@tokenizer/inflate@0.4.1:
@@ -7886,6 +7985,10 @@ packages:
     resolution: {integrity: sha512-Hs59xBNfUIunMFgWAbGX5cq6893IbWg4KnrjbYwX3tx0ztorVgTDA6B2sxf8ejHJ4wz8BqGUMYlnzNBer5NvGg==}
     engines: {node: '>= 4'}
     dev: true
+
+  /immer@11.1.3:
+    resolution: {integrity: sha512-6jQTc5z0KJFtr1UgFpIL3N9XSC3saRaI9PwWtzM2pSqkNGtiNkYY2OSwkOGDK2XcTRcLb1pi/aNkKZz0nxVH4Q==}
+    dev: false
 
   /import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
@@ -12486,6 +12589,29 @@ packages:
 
   /zod@4.3.5:
     resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
+    dev: false
+
+  /zustand@5.0.10(@types/react@19.2.8)(immer@11.1.3)(react@19.2.3):
+    resolution: {integrity: sha512-U1AiltS1O9hSy3rul+Ub82ut2fqIAefiSuwECWt6jlMVUGejvf+5omLcRBSzqbRagSM3hQZbtzdeRc6QVScXTg==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      '@types/react': '>=18.0.0'
+      immer: '>=9.0.6'
+      react: '>=18.0.0'
+      use-sync-external-store: '>=1.2.0'
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      immer:
+        optional: true
+      react:
+        optional: true
+      use-sync-external-store:
+        optional: true
+    dependencies:
+      '@types/react': 19.2.8
+      immer: 11.1.3
+      react: 19.2.3
     dev: false
 
   /zwitch@2.0.4:

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { ApiResponseSchema } from '../common/api-response.schema.js';
 import { UserModelSchema, UserUpdateInputObjectZodSchema } from '@repo/database/schemas';
 
-const UserResponseSchema = UserModelSchema.omit({
+export const UserResponseSchema = UserModelSchema.omit({
   password: true,
   accounts: true,
   sessions: true,
