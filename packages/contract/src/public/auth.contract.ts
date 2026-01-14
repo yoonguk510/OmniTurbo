@@ -94,7 +94,7 @@ export const authContract = {
       tags: ['Auth'],
     })
     .input(z.object({
-        refreshToken: z.string()
+        refreshToken: z.string().optional()
     }))
     .output(ApiResponseSchema(z.object({
       accessToken: z.string(),

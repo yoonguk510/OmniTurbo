@@ -13,8 +13,7 @@ export class UsersController {
   profile() {
     return {
       me: implement(contract.user.profile.me).handler(async ({ context }) => {
-        // context.request is now typed via orpc.d.ts
-        const userId = context.request?.user?.id;
+        const userId = context.req?.user?.id;
         
         if (!userId) {
              throw new ORPCError('UNAUTHORIZED', { message: 'User not found in context' });
@@ -34,7 +33,7 @@ export class UsersController {
       }),
 
       update: implement(contract.user.profile.update).handler(async ({ input, context }) => {
-        const userId = context.request?.user?.id;
+        const userId = context.req?.user?.id;
         if (!userId) {
              throw new ORPCError('UNAUTHORIZED', { message: 'User not found in context' });
         }

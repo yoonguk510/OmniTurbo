@@ -8,19 +8,38 @@ import { Prisma } from '@repo/database';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  private setAuthCookies(res: any, accessToken: string, refreshToken: string) {
+      res.cookie('access_token', accessToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 15 * 60 * 1000, // 15 minutes
+      });
+      res.cookie('refresh_token', refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          path: '/auth/refresh',
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+  }
+
   @Implement(contract.public.auth)
   auth() {
     return {
-      login: implement(contract.public.auth.login).handler(async ({ input }) => {
+      login: implement(contract.public.auth.login).handler(async ({ input, context }) => {
         const user = await this.authService.validateUser(input.email, input.password);
         if (!user) {
           throw new ORPCError('UNAUTHORIZED', {
             message: 'Invalid email or password',
           });
         }
+        const result = await this.authService.login(user);
+        this.setAuthCookies(context.res, result.accessToken, result.refreshToken);
+        
         return {
           status: 'success',
-          data: await this.authService.login(user),
+          data: result,
         };
       }),
 
@@ -45,7 +64,7 @@ export class AuthController {
         }
       }),
 
-      google: implement(contract.public.auth.google).handler(async ({ input }) => {
+      google: implement(contract.public.auth.google).handler(async ({ input, context }) => {
           const googleData = await this.authService.verifyGoogleToken(input.idToken);
           const user = await this.authService.findOrCreateGoogleUser({
               email: googleData.email,
@@ -54,9 +73,12 @@ export class AuthController {
               picture: googleData.picture
           });
           
+          const result = await this.authService.login(user);
+          this.setAuthCookies(context.res, result.accessToken, result.refreshToken);
+
           return {
               status: 'success',
-              data: await this.authService.login(user)
+              data: result
           };
       }),
 
@@ -75,12 +97,24 @@ export class AuthController {
           return { status: 'success', data: undefined };
       }),
 
-      logout: implement(contract.public.auth.logout).handler(async () => {
+      logout: implement(contract.public.auth.logout).handler(async ({ context }) => {
+          context.res.clearCookie('access_token');
+          context.res.clearCookie('refresh_token', { path: '/auth/refresh' });
           return { status: 'success', data: undefined };
       }),
       
-      refresh: implement(contract.public.auth.refresh).handler(async ({ input }) => {
-         const result = await this.authService.refresh(input.refreshToken);
+      refresh: implement(contract.public.auth.refresh).handler(async ({ input, context }) => {
+         const refreshToken = input.refreshToken ?? context.req.cookies['refresh_token'];
+         
+         if (!refreshToken) {
+             throw new ORPCError('UNAUTHORIZED', {
+                 message: 'Missing refresh token',
+             });
+         }
+
+         const result = await this.authService.refresh(refreshToken);
+         this.setAuthCookies(context.res, result.accessToken, result.refreshToken);
+         
          return { status: 'success', data: result };
       }),
     };
