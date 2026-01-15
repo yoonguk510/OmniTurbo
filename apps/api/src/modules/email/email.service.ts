@@ -21,7 +21,7 @@ export class EmailService {
     }
     this.resend = new Resend(apiKey);
     this.fromEmail = this.configService.get<string>('EMAIL_FROM') || 'onboarding@resend.dev';
-    this.webUrl = this.configService.get<string>('WEB_URL') || 'http://localhost:3000';
+    this.webUrl = this.configService.get<string>('WEB_URL') || 'http://localhost:3001';
   }
 
   async sendVerificationEmail(email: string, token: string) {

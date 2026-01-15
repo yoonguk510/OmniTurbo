@@ -87,8 +87,8 @@ export class AuthController {
           return { status: 'success', data: undefined };
       }),
 
-      resetPassword: implement(contract.public.auth.resetPassword).handler(async () => {
-          // Implement reset password logic
+      resetPassword: implement(contract.public.auth.resetPassword).handler(async ({ input }) => {
+          await this.authService.resetPassword(input.token, input.password);
           return { status: 'success', data: undefined };
       }),
 

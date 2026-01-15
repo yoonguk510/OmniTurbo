@@ -20,14 +20,14 @@ export function ResetPasswordForm({ className, ...props }: UserAuthFormProps) {
   const searchParams = useSearchParams()
   const token = searchParams.get("token") || ""
 
-  const { mutateAsync: resetPassword, isPending } = useMutation({
+  const { mutateAsync: resetPassword, isPending, error: resetError } = useMutation({
     ...orpc.public.auth.resetPassword.mutationOptions(),
     onSuccess: () => {
       toast.success("Password has been reset successfully")
       router.push("/login")
     },
     onError: (error) => {
-      toast.error(error.message)
+      // toast.error(error.message)
     },
   })
 
@@ -70,6 +70,12 @@ export function ResetPasswordForm({ className, ...props }: UserAuthFormProps) {
         }}
       >
         <div className="grid gap-4">
+           {resetError && (
+             <div className="bg-destructive/15 p-3 rounded-md flex items-center gap-2 text-sm text-destructive font-medium">
+                <Icons.warning className="h-4 w-4" />
+                {resetError.message}
+             </div>
+          )}
           <form.Field
             name="password"
             children={(field) => (

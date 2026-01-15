@@ -15,13 +15,13 @@ import { orpc } from "@/lib/orpc"
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 export function ForgotPasswordForm({ className, ...props }: UserAuthFormProps) {
-  const { mutateAsync: forgotPassword, isPending } = useMutation({
+  const { mutateAsync: forgotPassword, isPending, error: forgotError } = useMutation({
     ...orpc.public.auth.forgotPassword.mutationOptions(),
     onSuccess: () => {
       toast.success("If account exists, password reset link has been sent to your email")
     },
     onError: (error) => {
-      toast.error(error.message)
+      // toast.error(error.message)
     },
   })
 
@@ -44,6 +44,12 @@ export function ForgotPasswordForm({ className, ...props }: UserAuthFormProps) {
         }}
       >
         <div className="grid gap-4">
+          {forgotError && (
+             <div className="bg-destructive/15 p-3 rounded-md flex items-center gap-2 text-sm text-destructive font-medium">
+                <Icons.warning className="h-4 w-4" />
+                {forgotError.message}
+             </div>
+          )}
           <form.Field
             name="email"
             children={(field) => (

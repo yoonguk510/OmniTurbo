@@ -13,12 +13,14 @@ import { Icons } from "@/components/icons"
 import { cn } from "@repo/ui/lib/utils"
 import { orpc } from "@/lib/orpc"
 
+import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google"
+
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function RegisterForm({ className, ...props }: UserAuthFormProps) {
+function RegisterFormContent({ className, ...props }: UserAuthFormProps) {
   const router = useRouter()
   
-  const { mutateAsync: register, isPending: isRegisterPending } = useMutation({
+  const { mutateAsync: register, isPending: isRegisterPending, error: registerError } = useMutation({
     ...orpc.public.auth.register.mutationOptions(),
     onSuccess: () => {
       toast.success("Account created successfully")
@@ -27,19 +29,31 @@ export function RegisterForm({ className, ...props }: UserAuthFormProps) {
       router.push("/login")
     },
     onError: (error) => {
-      toast.error(error.message)
+      // toast.error(error.message)
     },
   })
 
   // Google Login (Same concept as LoginForm)
-  const { mutateAsync: googleLogin, isPending: isGooglePending } = useMutation({
+  // Google Login (Same concept as LoginForm)
+  const { mutateAsync: googleAccess, isPending: isGooglePending, error: googleError } = useMutation({
     ...orpc.public.auth.google.mutationOptions(),
     onSuccess: () => {
-       // Handle success
+       toast.success("Account created via Google")
+       // Query invalidation if needed
+       // router.push("/") ? or handle same as login
+       router.push("/")
     },
     onError: (error) => {
-      toast.error(error.message)
+      // toast.error(error.message)
     }
+  })
+
+  const googleLogin = useGoogleLogin({
+    flow: 'auth-code',
+    onSuccess: async (codeResponse) => {
+        await googleAccess({ idToken: codeResponse.code })
+    },
+    onError: () => toast.error("Google Login Failed"),
   })
 
   const form = useForm({
@@ -65,6 +79,18 @@ export function RegisterForm({ className, ...props }: UserAuthFormProps) {
         }}
       >
         <div className="grid gap-4">
+           {registerError && (
+             <div className="bg-destructive/15 p-3 rounded-md flex items-center gap-2 text-sm text-destructive font-medium">
+                <Icons.warning className="h-4 w-4" />
+                {registerError.message}
+             </div>
+          )}
+           {googleError && (
+             <div className="bg-destructive/15 p-3 rounded-md flex items-center gap-2 text-sm text-destructive font-medium">
+                <Icons.warning className="h-4 w-4" />
+                {googleError.message}
+             </div>
+          )}
            <form.Field
             name="name"
             children={(field) => (
@@ -152,7 +178,7 @@ export function RegisterForm({ className, ...props }: UserAuthFormProps) {
           </span>
         </div>
       </div>
-      <Button variant="outline" type="button" disabled={isLoading}>
+       <Button variant="outline" type="button" disabled={isLoading} onClick={() => googleLogin()}>
         {isLoading ? (
           <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
         ) : (
@@ -168,4 +194,12 @@ export function RegisterForm({ className, ...props }: UserAuthFormProps) {
       </div>
     </div>
   )
+}
+
+export function RegisterForm(props: UserAuthFormProps) {
+    return (
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+            <RegisterFormContent {...props} />
+        </GoogleOAuthProvider>
+    )
 }

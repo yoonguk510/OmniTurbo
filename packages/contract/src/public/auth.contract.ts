@@ -56,6 +56,10 @@ export const authContract = {
         status: 401,
         message: 'Invalid email or password',
       },
+      FORBIDDEN: {
+        status: 403,
+        message: 'Email not verified',
+      },
     }),
 
   register: oc
@@ -81,7 +85,7 @@ export const authContract = {
       summary: 'User Logout',
       tags: ['Auth'],
     })
-    .input(z.void())
+    .input(z.void().or(z.object({})))
     .output(ApiResponseSchema(z.void())),
 
   refresh: oc

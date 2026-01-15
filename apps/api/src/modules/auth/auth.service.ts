@@ -27,13 +27,19 @@ export class AuthService {
   async validateUser(email: string, pass: string): Promise<Omit<User, 'password'> | null> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (user && user.password && (await bcrypt.compare(pass, user.password))) {
-      const { password: _password, ...result } = user;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password, ...result } = user;
       return result;
     }
     return null;
   }
 
   async login(user: Omit<User, 'password'>) {
+    if (!user.emailVerified) {
+        throw new ORPCError('FORBIDDEN', {
+            message: 'Email not verified',
+        });
+    }
     const payload = { email: user.email, sub: user.id, role: user.role };
     const accessToken = this.jwtService.sign(payload);
     const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
@@ -53,10 +59,22 @@ export class AuthService {
     };
   }
 
-  async verifyGoogleToken(idToken: string) {
+  async verifyGoogleToken(token: string) {
     try {
+        let idToken = token;
+        if (!token.includes('.')) {
+             const { tokens } = await this.googleClient.getToken({
+                code: token,
+                redirect_uri: 'postmessage', // @react-oauth/google popup flow uses this
+             });
+             if (!tokens.id_token) {
+                 throw new UnauthorizedException('No ID Token in response');
+             }
+             idToken = tokens.id_token;
+        }
+
         const ticket = await this.googleClient.verifyIdToken({
-            idToken,
+            idToken: idToken,
             audience: this.configService.get<string>('GOOGLE_CLIENT_ID'),
         });
         const payload = ticket.getPayload();
@@ -70,6 +88,7 @@ export class AuthService {
             picture: payload.picture 
         };
     } catch (error) {
+        console.log(error);
         throw new UnauthorizedException('Invalid Google Token');
     }
   }
@@ -161,6 +180,32 @@ export class AuthService {
       });
        
       await this.emailService.sendPasswordResetEmail(email, token);
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+      const verificationToken = await this.prisma.verificationToken.findFirst({
+          where: { token },
+      });
+
+      if (!verificationToken || new Date() > verificationToken.expires) {
+           if (verificationToken) {
+               await this.prisma.verificationToken.delete({ where: { identifier_token: { identifier: verificationToken.identifier, token } } });
+           }
+           throw new ORPCError('BAD_REQUEST', {
+              message: 'Invalid or expired token',
+          });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+      await this.prisma.user.update({
+          where: { email: verificationToken.identifier },
+          data: { password: hashedPassword },
+      });
+
+      await this.prisma.verificationToken.delete({
+          where: { identifier_token: { identifier: verificationToken.identifier, token } },
+      });
   }
   async verifyEmail(token: string) {
     const verificationToken = await this.prisma.verificationToken.findFirst({
