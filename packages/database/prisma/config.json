@@ -1,0 +1,10 @@
+{
+    "mode": "custom",
+    "dateTimeStrategy": "coerce",
+    "pureModels": true,
+    "variants": {
+        "pure": {
+            "enabled": true
+        }
+    }
+}

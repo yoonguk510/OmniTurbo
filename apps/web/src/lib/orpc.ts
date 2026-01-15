@@ -1,5 +1,5 @@
-import { createORPCClient, onError } from '@orpc/client';
 import { OpenAPILink } from '@orpc/openapi-client/fetch';
+import { createORPCClient, onError } from '@orpc/client';
 import { createTanstackQueryUtils } from '@orpc/tanstack-query';
 import { type ContractRouterClient } from '@orpc/contract';
 import { ResponseValidationPlugin } from '@orpc/contract/plugins';
@@ -7,7 +7,7 @@ import { contract } from '@repo/contract';
 
 // Environment variable for API URL (fallback to localhost for dev)
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api';
+  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
 
 const link = new OpenAPILink(contract, {
   url: API_BASE_URL,

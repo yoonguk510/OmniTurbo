@@ -1,7 +1,7 @@
 import { oc } from '@orpc/contract';
 import { z } from 'zod';
 import { ApiResponseSchema } from '../common/api-response.schema.js';
-import { UserModelSchema, UserCreateInputObjectZodSchema } from '@repo/database/schemas';
+import { UserSchema, UserCreateInputObjectZodSchema } from '@repo/database/schemas';
 
 const LoginInputSchema = z.object({
   email: z.email(),
@@ -16,10 +16,8 @@ const RegisterInputSchema = UserCreateInputObjectZodSchema.pick({
   password: z.string().min(6),
 });
 
-const UserResponseSchema = UserModelSchema.omit({
+const UserResponseSchema = UserSchema.omit({
   password: true,
-  accounts: true,
-  sessions: true,
 });
 
 const SSOInputSchema = z.object({

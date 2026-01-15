@@ -1,12 +1,10 @@
 import { oc } from '@orpc/contract';
 import { z } from 'zod';
 import { ApiResponseSchema } from '../common/api-response.schema.js';
-import { UserModelSchema, UserUpdateInputObjectZodSchema } from '@repo/database/schemas';
+import { UserSchema, UserUpdateInputObjectZodSchema } from '@repo/database/schemas';
 
-export const UserResponseSchema = UserModelSchema.omit({
+export const UserResponseSchema = UserSchema.omit({
   password: true,
-  accounts: true,
-  sessions: true,
 });
 
 export const profileContract = {
