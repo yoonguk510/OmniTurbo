@@ -13,9 +13,16 @@ export const storageContract = {
     .input(z.object({
         filename: z.string(),
         contentType: z.string(),
+        size: z.number().int().positive(),
     }))
     .output(ApiResponseSchema(z.object({
         url: z.string(),
         key: z.string(),
-    }))),
+    })))
+    .errors({
+      BAD_REQUEST: {
+        status: 400,
+        message: 'Invalid file type or size',
+      },
+    }),
 };

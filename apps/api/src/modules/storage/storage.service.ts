@@ -30,12 +30,12 @@ export class StorageService implements OnModuleInit {
    * @param contentType The MIME type of the file (e.g., 'image/jpeg')
    * @param expiresInSeconds Duration until the URL expires (default: 3600)
    */
-  async getPresignedUploadUrl(key: string, contentType: string, expiresInSeconds = 3600): Promise<{ url: string; key: string }> {
+   async getPresignedUploadUrl(key: string, contentType: string, size: number, expiresInSeconds = 3600): Promise<{ url: string; key: string }> {
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: key,
       ContentType: contentType,
-      // You can add ACLs here if needed, but usually R2/S3 permissions are bucket-level
+      ContentLength: size, 
     });
 
     const url = await getSignedUrl(this.s3Client, command, { expiresIn: expiresInSeconds });

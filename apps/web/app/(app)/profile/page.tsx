@@ -90,7 +90,8 @@ function ProfilePageContent() {
             // 1. Get Presigned URL
             const result = await getUploadUrl({
                 filename: file.name,
-                contentType: file.type
+                contentType: file.type,
+                size: file.size,
             });
             const url = result.data.url;
 
@@ -121,9 +122,9 @@ function ProfilePageContent() {
             
             await updateImage({ imageUrl: publicUrl });
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            toast.error("Failed to upload image");
+            toast.error(error.message || "Failed to upload image");
         }
     };
 
@@ -221,7 +222,7 @@ function ProfilePageContent() {
                                     type="file" 
                                     id="avatar-upload" 
                                     className="hidden" 
-                                    accept="image/*"
+                                    accept="image/png, image/jpeg, image/jpg, image/webp, image/avif, image/apng"
                                     onChange={handleFileChange}
                                 />
                              </div>
