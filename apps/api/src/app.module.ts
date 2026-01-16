@@ -10,6 +10,7 @@ import { AppController } from './app.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { EmailModule } from './modules/email/email.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { EmailModule } from './modules/email/email.module';
     AuthModule,
     UsersModule,
     EmailModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

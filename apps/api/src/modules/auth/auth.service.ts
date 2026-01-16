@@ -85,7 +85,8 @@ export class AuthService {
             email: payload.email, 
             sub: payload.sub, 
             name: payload.name, 
-            picture: payload.picture 
+            picture: payload.picture,
+            email_verified: payload.email_verified
         };
     } catch (error) {
         console.log(error);
@@ -93,49 +94,126 @@ export class AuthService {
     }
   }
 
-  async findOrCreateGoogleUser(payload: { email: string; sub: string; name?: string; picture?: string }) {
+  async handleGoogleLogin(payload: { email: string; sub: string; name?: string; picture?: string, email_verified?: boolean }) {
+     if (!payload.email_verified) {
+         throw new ORPCError('FORBIDDEN', {
+             message: 'Google email not verified',
+         });
+     }
+
+     // 1. Account Lookup (Priority)
+     const existingAccount = await this.prisma.account.findUnique({
+         where: {
+             provider_providerAccountId: {
+                 provider: 'google',
+                 providerAccountId: payload.sub
+             }
+         },
+         include: { user: true }
+     });
+
+     if (existingAccount) {
+         return existingAccount.user;
+     }
+
+     // 2. User Lookup (Auto-linking)
      let user = await this.prisma.user.findUnique({ where: { email: payload.email } });
      
      if (!user) {
+       // Create new user if not found
        user = await this.prisma.user.create({
          data: {
            email: payload.email,
            name: payload.name,
            image: payload.picture,
-           emailVerified: new Date(),
-           accounts: {
-             create: {
-               type: 'oauth',
-               provider: 'google',
-               providerAccountId: payload.sub,
-             }
-           }
+           emailVerified: new Date(), // Trusted from Google
          }
        });
      } else {
-        // Ensure account link exists
-        const account = await this.prisma.account.findUnique({
-            where: {
-                provider_providerAccountId: {
-                    provider: 'google',
-                    providerAccountId: payload.sub
-                }
-            }
-        });
-        if (!account) {
-            await this.prisma.account.create({
-                data: {
-                    userId: user.id,
-                    type: 'oauth',
-                    provider: 'google',
-                    providerAccountId: payload.sub
-                }
-            });
-        }
+         // User exists but has no link.
+         // Since Google verified the email, we trust it matches our record and we link it.
+         // We can optionally mark our user as verified if they weren't already.
+         if (!user.emailVerified) {
+             await this.prisma.user.update({
+                 where: { id: user.id },
+                 data: { emailVerified: new Date() }
+             });
+         }
      }
-     
-     const { password: _password, ...result } = user;
-     return result;
+
+     // Link Account
+     await this.prisma.account.create({
+        data: {
+            userId: user.id,
+            type: 'oauth',
+            provider: 'google',
+            providerAccountId: payload.sub
+        }
+    });
+
+    return user;
+  }
+
+  async linkAccount(userId: string, input: { provider: string; idToken: string }) {
+      let payload: { email: string; sub: string; email_verified?: boolean } | null = null;
+      
+      if (input.provider === 'google') {
+          payload = await this.verifyGoogleToken(input.idToken);
+      } else {
+          throw new ORPCError('BAD_REQUEST', { message: `Provider ${input.provider} not supported` });
+      }
+
+      if (!payload.email_verified) {
+        throw new ORPCError('FORBIDDEN', {
+            message: 'Email not verified by provider',
+        });
+      }
+
+      // Check collision
+      const existingAccount = await this.prisma.account.findUnique({
+          where: {
+              provider_providerAccountId: {
+                  provider: input.provider,
+                  providerAccountId: payload.sub
+              }
+          }
+      });
+
+      if (existingAccount) {
+          if (existingAccount.userId === userId) {
+             return; // Already linked to this user, harmless
+          }
+          throw new ORPCError('CONFLICT', {
+              message: `This ${input.provider} account is already connected to another user.`,
+          });
+      }
+
+      await this.prisma.account.create({
+          data: {
+              userId,
+              type: 'oauth',
+              provider: input.provider,
+              providerAccountId: payload.sub
+          }
+      });
+  }
+
+  async unlinkAccount(userId: string, provider: string) {
+      // Find the account
+       const account = await this.prisma.account.findFirst({
+          where: {
+              userId,
+              provider,
+          }
+       });
+
+       if (!account) {
+           throw new ORPCError('NOT_FOUND', { message: 'Account not linked' });
+       }
+       
+       await this.prisma.account.delete({
+           where: { id: account.id } // Account uses CUID
+       });
   }
 
   async register(input: { email: string; password?: string; name?: string | null }) {
@@ -205,6 +283,26 @@ export class AuthService {
 
       await this.prisma.verificationToken.delete({
           where: { identifier_token: { identifier: verificationToken.identifier, token } },
+      });
+  }
+
+  async updatePassword(userId: string, currentPass: string | undefined, newPass: string) {
+      const user = await this.prisma.user.findUnique({ where: { id: userId }});
+      
+      if (user?.password) {
+           if (!currentPass) {
+                throw new ORPCError('BAD_REQUEST', { message: 'Current password is required' });
+           }
+           const isValid = await bcrypt.compare(currentPass, user.password);
+           if (!isValid) {
+                throw new ORPCError('FORBIDDEN', { message: 'Incorrect current password' });
+           }
+      }
+
+      const hashedPassword = await bcrypt.hash(newPass, 10);
+      await this.prisma.user.update({
+          where: { id: userId },
+          data: { password: hashedPassword }
       });
   }
   async verifyEmail(token: string) {

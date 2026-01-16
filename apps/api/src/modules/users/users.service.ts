@@ -12,6 +12,12 @@ export class UsersService {
     });
   }
 
+
+  async findUserAccounts(userId: string) {
+    return this.prisma.account.findMany({
+      where: { userId },
+    });
+  }
   async findByEmail(email: string) {
     return this.prisma.user.findUnique({
       where: { email },
@@ -24,4 +30,6 @@ export class UsersService {
       data,
     });
   }
+
+
 }

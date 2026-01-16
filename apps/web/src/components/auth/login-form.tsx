@@ -14,17 +14,28 @@ import { cn } from "@repo/ui/lib/utils"
 import { orpc } from "@/lib/orpc"
 
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google"
+import { useAuthStore } from "@/lib/auth.store"
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 function LoginFormContent({ className, ...props }: UserAuthFormProps) {
   const router = useRouter()
   const queryClient = useQueryClient()
+  const { setUser } = useAuthStore()
   
   const { mutateAsync: login, isPending: isLoginPending, error: loginError } = useMutation({
     ...orpc.public.auth.login.mutationOptions(),
-    onSuccess: () => {
+    onSuccess: (data) => {
       toast.success("Logged in successfully")
+      
+      const user = data.data.user
+      setUser({
+           ...user,
+           createdAt: new Date(user.createdAt),
+           updatedAt: new Date(user.updatedAt),
+           emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
+      })
+
       queryClient.invalidateQueries(orpc.user.profile.me.queryOptions({ input: {} }))
       router.push("/") 
     },
@@ -37,6 +48,14 @@ function LoginFormContent({ className, ...props }: UserAuthFormProps) {
     ...orpc.public.auth.google.mutationOptions(),
     onSuccess: (data) => {
         toast.success("Logged in with Google successfully")
+         const user = data.data.user
+         setUser({
+           ...user,
+           createdAt: new Date(user.createdAt),
+           updatedAt: new Date(user.updatedAt),
+           emailVerified: user.emailVerified ? new Date(user.emailVerified) : null,
+        })
+
         queryClient.invalidateQueries(orpc.user.profile.me.queryOptions({ input: {} }))
         router.push("/")
     },

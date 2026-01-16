@@ -5,10 +5,9 @@ import { Header } from "@/components/header"
 export default function Page() {
   return (
     <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 max-w-7xl mx-auto w-full">
+      <main className="flex-1 w-full">
         <section className="space-y-6 pb-8 pt-6 md:pb-12 md:pt-10 lg:py-32">
-          <div className="container flex max-w-7xl flex-col items-center gap-4 text-center">
+          <div className="flex max-w-7xl flex-col items-center gap-4 text-center">
             <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl lg:text-7xl">
               Monorepo Boilerplate
             </h1>

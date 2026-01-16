@@ -66,11 +66,12 @@ export class AuthController {
 
       google: implement(contract.public.auth.google).handler(async ({ input, context }) => {
           const googleData = await this.authService.verifyGoogleToken(input.idToken);
-          const user = await this.authService.findOrCreateGoogleUser({
+          const user = await this.authService.handleGoogleLogin({
               email: googleData.email,
               sub: googleData.sub,
               name: googleData.name,
-              picture: googleData.picture
+              picture: googleData.picture,
+              email_verified: googleData.email_verified
           });
           
           const result = await this.authService.login(user);
