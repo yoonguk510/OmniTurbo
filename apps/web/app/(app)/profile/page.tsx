@@ -7,12 +7,12 @@ import { Input } from "@repo/ui/components/ui/input"
 import { Label } from "@repo/ui/components/ui/label"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { orpc } from "@/lib/orpc"
+import { useImageUpload } from "@/lib/image-upload"
 import { useForm } from "@tanstack/react-form"
 import { toast } from "sonner"
 import { Icons } from "@/components/icons"
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google"
 import { Avatar, AvatarFallback, AvatarImage } from "@repo/ui/components/ui/avatar"
-import { cn } from "@repo/ui/lib/utils"
 
 function ProfilePageContent() {
     const queryClient = useQueryClient();
@@ -72,7 +72,7 @@ function ProfilePageContent() {
         },
         onError: (error) => toast.error(error.message)
     })
-    const { mutateAsync: getUploadUrl } = useMutation(orpc.public.storage.getUploadUrl.mutationOptions());
+
     const { mutateAsync: updateImage } = useMutation({
         ...orpc.user.profile.updateImage.mutationOptions(),
         onSuccess: () => {
@@ -81,51 +81,23 @@ function ProfilePageContent() {
         },
         onError: (error) => toast.error(error.message)
     });
+    const { isPending: isImageUpdating, upload } = useImageUpload({
+         onSuccess: async (publicUrl) => {
+             await updateImage({ imageUrl: publicUrl });
+         },
+         onError: (error) => {
+             toast.error(error.message || "Failed to upload image");
+         }
+    });
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        try {
-            // 1. Get Presigned URL
-            const result = await getUploadUrl({
-                filename: file.name,
-                contentType: file.type,
-                size: file.size,
-            });
-            const url = result.data.url;
+        // Reset the input value so the same file can be selected again if needed
+        e.target.value = '';
 
-            if (!url) {
-                throw new Error("Failed to get upload URL");
-            }
-
-            // 2. Upload to R2/S3
-            const upload = await fetch(url, {
-                method: 'PUT',
-                body: file,
-                headers: {
-                    'Content-Type': file.type
-                }
-            });
-
-            if (!upload.ok) {
-                throw new Error('Upload failed');
-            }
-
-            // 3. Update User Profile
-            const pubUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
-            if (!pubUrl) {
-                throw new Error("R2 public URL not found");
-            }
-            const fileKey = result.data.key;
-            const publicUrl = `${pubUrl}/${fileKey}`;
-            
-            await updateImage({ imageUrl: publicUrl });
-
-        } catch (error: any) {
-            console.error(error);
-            toast.error(error.message || "Failed to upload image");
-        }
+        await upload(file);
     };
 
     const googleLogin = useGoogleLogin({
