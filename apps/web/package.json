@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@orpc/client": "^1.13.4",
+    "@orpc/contract": "^1.13.2",
+    "@orpc/openapi-client": "^1.13.4",
     "@orpc/tanstack-query": "^1.13.4",
     "@react-oauth/google": "^0.13.4",
     "@repo/contract": "workspace:*",
