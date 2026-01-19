@@ -1,124 +1,118 @@
-# Turborepo starter
+# OmniTurbo - The Professional Startup Suite
 
-This is a community-maintained example. If you experience a problem, please submit a pull request with a fix. GitHub Issues will be closed.
+OmniTurbo is a production-ready, full-stack monorepo boilerplate designed for rapid development and seamless scalability. It provides a robust foundation for building modern web applications with a shared, type-safe infrastructure.
 
-## Using this example
+## Core Architecture
 
-Run the following command:
+This boilerplate is built on a set of modern, high-performance technologies, organized in a `pnpm` workspace-powered monorepo.
 
-```bash
-npx create-turbo@latest -e with-nestjs
+- **Monorepo Management**: [Turborepo](https://turbo.build/repo) for high-performance build system and code sharing.
+- **API**: [NestJS](https://nestjs.com/) framework for the backend, offering a modular and scalable architecture.
+- **Web Frontend**: [Next.js](https://nextjs.org/) (with Turbopack) for a fast and feature-rich web experience.
+- **Contract-First API**: [oRPC](https://orpc.io/) for defining and consuming APIs with end-to-end type safety, eliminating the need for manual client generation.
+- **Database**: [Prisma](https://www.prisma.io/) as the next-generation ORM.
+- **Universal UI**: [Shadcn/UI](https://ui.shadcn.com/) components built with Tailwind CSS.
+- **Authentication**: A complete solution with JWT, social logins (Google), and secure cookie-based sessions.
+- **Email Service**: [Resend](https://resend.com/) and [JSX Email](https://jsx.email/) for building and sending transactional emails with React components.
+
+## Project Structure
+
+The monorepo is organized into `apps` and `packages`, promoting code reuse and separation of concerns.
+
 ```
-
-## What's inside?
-
-This Turborepo includes the following packages & apps:
-
-### Apps and Packages
-
-```shell
 .
 ├── apps
-│   ├── api                       # NestJS app (https://nestjs.com).
-│   └── web                       # Next.js app (https://nextjs.org).
-└── packages
-    ├── @repo/api                 # Shared `NestJS` resources.
-    ├── @repo/eslint-config       # `eslint` configurations (includes `prettier`)
-    ├── @repo/jest-config         # `jest` configurations
-    ├── @repo/typescript-config   # `tsconfig.json`s used throughout the monorepo
-    └── @repo/ui                  # Shareable stub React component library.
+│   ├── api                       # NestJS API Backend
+│   └── web                       # Next.js Web Frontend
+├── packages
+│   ├── contract                  # oRPC API contracts (source of truth)
+│   ├── database                  # Prisma schema, client, and Zod schemas
+│   ├── email                     # (Part of `api`) JSX-based email templates
+│   ├── ui                        # Shared UI components (Shadcn/UI)
+│   ├── eslint-config             # Shared ESLint configurations
+│   ├── jest-config               # Shared Jest configurations
+│   └── typescript-config         # Shared TypeScript configurations
 ```
 
-Each package and application are mostly written in [TypeScript](https://www.typescriptlang.org/).
+## Quick Start
 
-### Utilities
+### Prerequisites
 
-This `Turborepo` has some additional tools already set for you:
+- [Node.js](https://nodejs.org/en/) (v18 or higher)
+- [pnpm](https://pnpm.io/installation)
 
-- [TypeScript](https://www.typescriptlang.org/) for static type-safety
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-- [Jest](https://prettier.io) & [Playwright](https://playwright.dev/) for testing
+### 1. Installation
 
-### Commands
-
-This `Turborepo` already configured useful commands for all your apps and packages.
-
-#### Build
+Clone the repository and install the dependencies:
 
 ```bash
-# Will build all the app & packages with the supported `build` script.
-pnpm run build
-
-# ℹ️ If you plan to only build apps individually,
-# Please make sure you've built the packages first.
+git clone <repository-url>
+cd <repository-name>
+pnpm install
 ```
 
-#### Develop
+### 2. Database Setup
+
+This project uses PostgreSQL. Create a `.env` file in the root of the `packages/database` directory with your database connection string:
+
+```env
+# packages/database/.env
+DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE"
+```
+
+Then, generate the Prisma client and push the schema to your database:
 
 ```bash
-# Will run the development server for all the app & packages with the supported `dev` script.
-pnpm run dev
+pnpm --filter @repo/database db:generate
+pnpm --filter @repo/database db:push
 ```
 
-#### test
+### 3. Environment Variables
+
+Create `.env` files for the `api` and `web` apps. You can start by copying the provided `.env.example` files (if they exist).
+
+**`apps/api/.env`**:
+
+```env
+# Port
+PORT=3000
+
+# Web URL
+WEB_URL=http://localhost:3001
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key
+JWT_REFRESH_SECRET=your-super-secret-jwt-refresh-key
+
+# Google OAuth
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Resend
+RESEND_API_KEY=your-resend-api-key
+EMAIL_FROM="Your Name <noreply@yourdomain.com>"
+```
+
+**`apps/web/.env.local`**:
+```env
+# API URL
+NEXT_PUBLIC_API_URL=http://localhost:3000
+
+# Google OAuth
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=your-google-client-id
+```
+
+### 4. Running in Development
+
+To start all applications in development mode, run the following command from the root of the project:
 
 ```bash
-# Will launch a test suites for all the app & packages with the supported `test` script.
-pnpm run test
-
-# You can launch e2e testes with `test:e2e`
-pnpm run test:e2e
-
-# See `@repo/jest-config` to customize the behavior.
+pnpm dev
 ```
 
-#### Lint
+- The API will be available at `http://localhost:3000`.
+- The web app will be available at `http://localhost:3001`.
 
-```bash
-# Will lint all the app & packages with the supported `lint` script.
-# See `@repo/eslint-config` to customize the behavior.
-pnpm run lint
-```
+## Contributing
 
-#### Format
-
-```bash
-# Will format all the supported `.ts,.js,json,.tsx,.jsx` files.
-# See `@repo/eslint-config/prettier-base.js` to customize the behavior.
-pnpm format
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```bash
-npx turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-```bash
-npx turbo link
-```
-
-## Useful Links
-
-This example take some inspiration the [with-nextjs](https://github.com/vercel/turborepo/tree/main/examples/with-nextjs) `Turbo` example and [01-cats-app](https://github.com/nestjs/nest/tree/master/sample/01-cats-app) `NestJs` sample.
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+This boilerplate is designed to be a starting point for your own projects. Feel free to fork it, extend it, and customize it to your needs. If you find any issues or have suggestions for improvements, please open an issue or submit a pull request.

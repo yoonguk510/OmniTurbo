@@ -1,0 +1,55 @@
+# Agentic Control Rules for OmniTurbo
+
+This file outlines the strict operational framework for any AI agent or developer working on this repository. Adherence to these rules is mandatory to maintain consistency, quality, and a smooth development workflow.
+
+## 1. Package Manager
+
+- **ALWAYS** use `pnpm` for all package management tasks (installing, updating, removing packages).
+- **NEVER** use `npm` or `yarn`. This is to ensure consistency with the lockfile and workspace setup.
+
+**Example:**
+```bash
+# Correct
+pnpm install
+pnpm add <package-name>
+
+# Incorrect
+npm install
+yarn add <package-name>
+```
+
+## 2. UI Component Installation
+
+- To add a new UI component from the `shadcn/ui` library, **ALWAYS** use the dedicated script:
+  ```bash
+  pnpm ui <component-name>
+  ```
+- This script correctly installs the component into the shared `@repo/ui` package.
+- **NEVER** install components directly into the `apps/web` or `apps/native` applications.
+
+## 3. Contract-First API Development
+
+- All changes to the API (new endpoints, modified request/response shapes) **MUST** begin in the `packages/contract` directory.
+- Define the new procedure or modify an existing one in the relevant contract file (e.g., `packages/contract/src/user/profile.contract.ts`).
+- The implementation of the contract on the `api` server and the consumption on the `web` client should only happen *after* the contract is defined.
+
+## 4. Database Consistency
+
+- After making **ANY** change to the `packages/database/prisma/schema.prisma` file, you **MUST** run the database generation script:
+  ```bash
+  pnpm db:generate
+  ```
+- This command ensures that the Prisma client and the auto-generated Zod schemas are kept in sync with the database schema.
+
+## 5. Clean Code and Documentation
+
+- **NEVER** add "AI meta-commentary" or conversational "fluff" to the codebase.
+- Comments should only be used to explain complex technical logic, the 'Why' behind a decision, or the 'How' of a non-obvious implementation.
+- **Examples of comments to REMOVE:**
+  - `// I have updated this file to include the new logic.`
+  - `// This change implements the feature as requested.`
+  - `// Modified this function to match your specifications.`
+- **Examples of comments to KEEP:**
+  - `// Use a Set for faster lookups.`
+  - `// This workaround is necessary due to a bug in library X (see issue #123).`
+  - `// TODO: Refactor this to be more efficient.`
