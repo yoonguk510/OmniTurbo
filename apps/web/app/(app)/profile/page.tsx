@@ -25,7 +25,6 @@ function ProfilePageContent() {
     
     // Use `hasPassword` endpoint if you want to be extra safe, 
     // but typically `me` might not include this sensitive bit unless we specifically added an endpoint.
-    // Based on contract changes, we added `hasPassword` endpoint.
     const { data: passwordStatus, isLoading: isPasswordStatusLoading } = useQuery(
         orpc.user.profile.hasPassword.queryOptions({ input: {} })
     )
