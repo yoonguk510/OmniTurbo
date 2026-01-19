@@ -19,8 +19,15 @@ export class AuthController {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
-          path: '/auth/refresh',
+          path: '/auth/',
           maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+      // Public cookie for client-side expiry check (not HttpOnly)
+      res.cookie('access_token_expires_at', new Date(Date.now() + 15 * 60 * 1000).toISOString(), {
+          httpOnly: false,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 15 * 60 * 1000, // 15 minutes
       });
   }
 
@@ -99,8 +106,13 @@ export class AuthController {
       }),
 
       logout: implement(contract.public.auth.logout).handler(async ({ context }) => {
+          const refreshToken = context.req.cookies['refresh_token'];
+          if (refreshToken) {
+              await this.authService.logout(refreshToken);
+          }
           context.res.clearCookie('access_token');
           context.res.clearCookie('refresh_token', { path: '/auth/refresh' });
+          context.res.clearCookie('access_token_expires_at');
           return { status: 'success', data: undefined };
       }),
       

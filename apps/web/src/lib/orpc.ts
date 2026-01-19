@@ -12,11 +12,60 @@ const API_BASE_URL =
 const link = new OpenAPILink(contract, {
   url: API_BASE_URL,
   // key: No headers needed for Web, we rely entirely on HttpOnly cookies
-  fetch: (request, init) => {
-    return globalThis.fetch(request, {
+  // Custom Fetch Wrapper for Silent Refresh Strategy
+  fetch: async (url, init) => {
+    // 1. Proactive Refresh Check
+    const expiryCookie = document.cookie
+      .split('; ')
+      .find((row) => row.startsWith('access_token_expires_at='));
+    
+    if (expiryCookie) {
+      const expiryValue = expiryCookie.split('=')[1];
+      if (expiryValue) {
+        const expiryTime = new Date(expiryValue);
+        // If expiring within 1 minute, refresh proactively
+        if (expiryTime.getTime() - Date.now() < 60 * 1000) {
+          try {
+            await globalThis.fetch(`${API_BASE_URL}/auth/refresh`, {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               credentials: 'include',
+            });
+          } catch (e) {
+            // Ignore proactive refresh errors, let the actual request fail if needed
+          }
+        }
+      }
+    }
+
+    // 2. Initial Request
+    let response = await globalThis.fetch(url, {
       ...init,
-      credentials: 'include', //  <-- Critical: This sends cookies with requests
+      credentials: 'include',
     });
+
+    // 3. Reactive Refresh (Interceptor)
+    if (response.status === 401) {
+      try {
+         const refreshResponse = await globalThis.fetch(`${API_BASE_URL}/auth/refresh`, {
+             method: 'POST',
+             headers: { 'Content-Type': 'application/json' },
+             credentials: 'include',
+         });
+
+         if (refreshResponse.ok) {
+             // Retry original request
+             response = await globalThis.fetch(url, {
+                 ...init,
+                 credentials: 'include',
+             });
+         }
+      } catch (e) {
+         // Refresh failed, return original 401 response
+      }
+    }
+
+    return response;
   },
   interceptors: [
     onError((error) => {

@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { orpc } from '../lib/orpc';
 import { useAuthStore } from '../lib/auth.store';
 import { Toaster } from "@repo/ui/components/ui/sonner"
-import { UserResponseSchema } from '@repo/contract';
 
 function AuthWrapper({ children }: { children: React.ReactNode }) {
   const setUser = useAuthStore((state) => state.setUser);
@@ -16,13 +15,12 @@ function AuthWrapper({ children }: { children: React.ReactNode }) {
     ...orpc.user.profile.me.queryOptions({
       input: {}, // Empty input for "me" endpoint
     }),
-    retry: false, // Don't retry if 401
+    retry: false,
   });
 
   useEffect(() => {
       setLoading(isLoading);
       if (data?.status === 'success') {
-          // Parse data to coerce Date strings to Date objects
           setUser(data.data);
       } else if (error) {
           setUser(null);
@@ -38,8 +36,8 @@ export function ORPCProvider({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            retry: 1, // Don't retry indefinitely
-            staleTime: 5 * 1000, // 5 seconds
+            retry: 1,
+            staleTime: 5 * 1000,
           },
         },
       })

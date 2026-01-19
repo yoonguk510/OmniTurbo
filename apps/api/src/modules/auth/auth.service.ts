@@ -337,6 +337,14 @@ export class AuthService {
     });
   }
 
+  async logout(refreshToken: string) {
+      await this.prisma.session.delete({
+          where: { sessionToken: refreshToken },
+      }).catch(() => {
+          // Ignore if session not found
+      });
+  }
+
   async refresh(oldRefreshToken: string) {
      try {
        const payload = this.jwtService.verify(oldRefreshToken);
@@ -347,7 +355,7 @@ export class AuthService {
        });
 
        if (!session || session.expires < new Date()) {
-           throw new UnauthorizedException('Invalid refresh token');
+           throw new ORPCError('UNAUTHORIZED', { message: 'Invalid or missing refresh token' });
        }
        
        const user = session.user;
@@ -380,7 +388,7 @@ export class AuthService {
        };
 
      } catch (e) {
-         throw new UnauthorizedException('Invalid refresh token');
+         throw new ORPCError('UNAUTHORIZED', { message: 'Invalid or missing refresh token' });
      }
   }
 }
