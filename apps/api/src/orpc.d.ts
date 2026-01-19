@@ -1,4 +1,4 @@
-import { Request as ExpressRequest } from 'express';
+import { Request as ExpressRequest, Response as ExpressResponse } from 'express';
 
 declare module 'express' {
   interface Request {
@@ -12,6 +12,7 @@ declare module 'express' {
 
 declare module '@orpc/nest' {
   export interface ORPCGlobalContext {
-    request: ExpressRequest;
+    req: ExpressRequest;
+    res: ExpressResponse;
   }
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
 import './globals.css';
+import { ORPCProvider } from '@/providers/orpc-provider';
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -23,8 +24,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
-        {children}
+      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen bg-background font-sans antialiased`}>
+        <ORPCProvider>{children}</ORPCProvider>
       </body>
     </html>
   );

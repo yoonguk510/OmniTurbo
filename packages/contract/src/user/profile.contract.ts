@@ -1,12 +1,10 @@
 import { oc } from '@orpc/contract';
 import { z } from 'zod';
 import { ApiResponseSchema } from '../common/api-response.schema.js';
-import { UserModelSchema, UserUpdateInputObjectZodSchema } from '@repo/database/schemas';
+import { UserSchema, UserUpdateInputObjectZodSchema } from '@repo/database/schemas';
 
-const UserResponseSchema = UserModelSchema.omit({
+export const UserResponseSchema = UserSchema.omit({
   password: true,
-  accounts: true,
-  sessions: true,
 });
 
 export const profileContract = {
@@ -29,4 +27,78 @@ export const profileContract = {
     })
     .input(UserUpdateInputObjectZodSchema)
     .output(ApiResponseSchema(UserResponseSchema)),
+
+  linkAccount: oc
+    .route({
+      method: 'POST',
+      path: '/user/me/link',
+      summary: 'Link SSO Account to Current User',
+      tags: ['User'],
+    })
+    .input(z.object({
+      provider: z.enum(['google']), // Add more providers here later
+      idToken: z.string(),
+    }))
+    .output(ApiResponseSchema(z.void())),
+
+  updatePassword: oc
+    .route({
+      method: 'POST',
+      path: '/user/me/password',
+      summary: 'Update User Password',
+      tags: ['User'],
+    })
+    .input(z.object({
+      currentPassword: z.string().min(1).optional(),
+      newPassword: z.string().min(8, "Password must be at least 8 characters"),
+    }))
+    .output(ApiResponseSchema(z.void())),
+
+  updateImage: oc
+    .route({
+      method: 'PATCH',
+      path: '/user/me/image',
+      summary: 'Update Profile Image',
+      tags: ['User'],
+    })
+    .input(z.object({
+      imageUrl: z.string().url(),
+    }))
+    .output(ApiResponseSchema(z.void())),
+
+  unlinkAccount: oc
+    .route({
+      method: 'POST',
+      path: '/user/me/unlink',
+      summary: 'Unlink SSO Account',
+      tags: ['User'],
+    })
+    .input(z.object({
+      provider: z.string(),
+    }))
+    .output(ApiResponseSchema(z.void())),
+
+  getProviders: oc
+    .route({
+      method: 'GET',
+      path: '/user/me/providers',
+      summary: 'Get Linked Providers',
+      tags: ['User'],
+    })
+    .input(z.object({}))
+    .output(ApiResponseSchema(z.array(z.object({
+        provider: z.string()
+    })))),
+
+  hasPassword: oc
+    .route({
+      method: 'GET',
+      path: '/user/me/has-password',
+      summary: 'Check if user has password set',
+      tags: ['User'],
+    })
+    .input(z.object({}))
+    .output(ApiResponseSchema(z.object({
+        hasPassword: z.boolean()
+    }))),
 };

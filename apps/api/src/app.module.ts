@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { REQUEST } from '@nestjs/core';
 import { onError, ORPCModule } from '@orpc/nest';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { SmartCoercionPlugin } from '@orpc/json-schema'
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
@@ -9,14 +9,19 @@ import { AppService } from './app.service';
 import { AppController } from './app.controller';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { EmailModule } from './modules/email/email.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
   imports: [
     DatabaseModule,
     ConfigModule.forRoot({ isGlobal: true }),
     ORPCModule.forRootAsync({
-      useFactory: (request: Request) => ({
-        context: { request },
+      useFactory: (req: Request) => ({
+        context: { 
+          req, 
+          res: req.res as Response 
+        },
         plugins: [
             new SmartCoercionPlugin(),
         ],
@@ -30,6 +35,8 @@ import { UsersModule } from './modules/users/users.module';
     }),
     AuthModule,
     UsersModule,
+    EmailModule,
+    StorageModule,
   ],
   controllers: [AppController],
   providers: [AppService],

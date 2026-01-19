@@ -16,6 +16,7 @@ datasource db {
 generator zod {
   provider = "prisma-zod-generator"
   output   = "../src/generated/zod"
+  config   = "./config.json"
 }
 
 enum UserRole {
