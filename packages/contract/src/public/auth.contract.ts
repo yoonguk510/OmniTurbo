@@ -1,38 +1,21 @@
 import { oc } from '@orpc/contract';
 import { z } from 'zod';
-import { ApiResponseSchema } from '../common/api-response.schema.js';
-import { UserCreateInputObjectZodSchema } from '@repo/database/schemas';
-import { UserResponseSchema } from '../user/profile.contract.js';
+import { ApiResponseSchema } from '../schema/common.schema.js';
+import {
+  LoginInputSchema,
+  RegisterInputSchema,
+  SSOInputSchema,
+  ForgotPasswordInputSchema,
+  ResetPasswordInputSchema,
+  VerifyEmailInputSchema,
+  RefreshTokenInputSchema,
+  AuthResponseSchema,
+  UserResponseSchema,
+} from '../schema/auth.schema.js';
 
-const LoginInputSchema = z.object({
-  email: z.email(),
-  password: z.string().min(6),
-});
-
-const RegisterInputSchema = UserCreateInputObjectZodSchema.pick({
-  email: true,
-  password: true,
-  name: true,
-}).extend({
-  password: z.string().min(6),
-});
-
-const SSOInputSchema = z.object({
-  idToken: z.string(),
-});
-
-const ForgotPasswordInputSchema = z.object({
-  email: z.email(),
-});
-
-const ResetPasswordInputSchema = z.object({
-  token: z.string(),
-  password: z.string().min(6),
-});
-
-const VerifyEmailInputSchema = z.object({
-  token: z.string(),
-});
+// ============================================
+// Contract
+// ============================================
 
 export const authContract = {
   login: oc
@@ -43,11 +26,7 @@ export const authContract = {
       tags: ['Auth'],
     })
     .input(LoginInputSchema)
-    .output(ApiResponseSchema(z.object({
-      accessToken: z.string(),
-      refreshToken: z.string(),
-      user: UserResponseSchema,
-    })))
+    .output(ApiResponseSchema(AuthResponseSchema))
     .errors({
       UNAUTHORIZED: {
         status: 401,
@@ -92,14 +71,8 @@ export const authContract = {
       summary: 'Refresh Access Token',
       tags: ['Auth'],
     })
-    .input(z.object({
-        refreshToken: z.string().optional()
-    }))
-    .output(ApiResponseSchema(z.object({
-      accessToken: z.string(),
-      refreshToken: z.string(),
-      user: UserResponseSchema,
-    }))) // Success implies cookies are updated
+    .input(RefreshTokenInputSchema)
+    .output(ApiResponseSchema(AuthResponseSchema))
     .errors({
       UNAUTHORIZED: {
         status: 401,
@@ -115,11 +88,7 @@ export const authContract = {
       tags: ['Auth'],
     })
     .input(SSOInputSchema)
-    .output(ApiResponseSchema(z.object({
-      accessToken: z.string(),
-      refreshToken: z.string(),
-      user: UserResponseSchema,
-    }))),
+    .output(ApiResponseSchema(AuthResponseSchema)),
 
   forgotPassword: oc
     .route({

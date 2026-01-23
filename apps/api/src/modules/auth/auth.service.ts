@@ -7,6 +7,8 @@ import { PrismaClient } from '@repo/database';
 import * as bcrypt from 'bcrypt';
 import { User, UserRole } from '@repo/database';
 import { EmailService } from '../email/email.service';
+import type { UserResponse } from '@repo/contract/schema/user';
+import type { AuthResponse } from '@repo/contract/schema/auth';
 
 @Injectable()
 export class AuthService {
@@ -24,7 +26,7 @@ export class AuthService {
     );
   }
 
-  async validateUser(email: string, pass: string): Promise<Omit<User, 'password'> | null> {
+  async validateUser(email: string, pass: string): Promise<UserResponse | null> {
     const user = await this.prisma.user.findUnique({ where: { email } });
     if (user && user.password && (await bcrypt.compare(pass, user.password))) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -34,7 +36,7 @@ export class AuthService {
     return null;
   }
 
-  async login(user: Omit<User, 'password'>) {
+  async login(user: UserResponse): Promise<AuthResponse> {
     if (!user.emailVerified) {
         throw new ORPCError('FORBIDDEN', {
             message: 'Email not verified',

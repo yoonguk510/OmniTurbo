@@ -1,6 +1,13 @@
 import { oc } from '@orpc/contract';
-import { z } from 'zod';
-import { ApiResponseSchema } from '../common/api-response.schema.js';
+import { ApiResponseSchema } from '../schema/common.schema.js';
+import {
+  UploadUrlInputSchema,
+  UploadUrlResponseSchema,
+} from '../schema/storage.schema.js';
+
+// ============================================
+// Contract
+// ============================================
 
 export const storageContract = {
   getUploadUrl: oc
@@ -10,15 +17,8 @@ export const storageContract = {
       summary: 'Get Presigned Upload URL',
       tags: ['Storage'],
     })
-    .input(z.object({
-        filename: z.string(),
-        contentType: z.string(),
-        size: z.number().int().positive(),
-    }))
-    .output(ApiResponseSchema(z.object({
-        url: z.string(),
-        key: z.string(),
-    })))
+    .input(UploadUrlInputSchema)
+    .output(ApiResponseSchema(UploadUrlResponseSchema))
     .errors({
       BAD_REQUEST: {
         status: 400,

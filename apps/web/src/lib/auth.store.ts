@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { produce } from 'immer';
-import { UserResponseSchema } from '@repo/contract';
+import { UserResponseSchema } from '@repo/contract/schema/user';
 import z from 'zod';
 
 type User = z.infer<typeof UserResponseSchema>;

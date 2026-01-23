@@ -1,11 +1,12 @@
 import { oc } from '@orpc/contract';
 import { z } from 'zod';
-import { ApiResponseSchema } from '../common/api-response.schema.js';
-import { UserSchema, UserUpdateInputObjectZodSchema } from '@repo/database/schemas';
+import { ApiResponseSchema } from '../schema/common.schema.js';
+import { UserResponseSchema } from '../schema/user.schema.js';
+import { UserUpdateInputObjectZodSchema } from '@repo/database/schemas';
 
-export const UserResponseSchema = UserSchema.omit({
-  password: true,
-});
+// ============================================
+// Contract
+// ============================================
 
 export const profileContract = {
   me: oc
@@ -36,7 +37,7 @@ export const profileContract = {
       tags: ['User'],
     })
     .input(z.object({
-      provider: z.enum(['google']), // Add more providers here later
+      provider: z.enum(['google']),
       idToken: z.string(),
     }))
     .output(ApiResponseSchema(z.void())),

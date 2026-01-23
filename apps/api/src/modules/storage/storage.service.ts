@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import type { UploadUrlResponse } from '@repo/contract/schema/storage';
 
 @Injectable()
 export class StorageService implements OnModuleInit {
@@ -30,7 +31,7 @@ export class StorageService implements OnModuleInit {
    * @param contentType The MIME type of the file (e.g., 'image/jpeg')
    * @param expiresInSeconds Duration until the URL expires (default: 3600)
    */
-   async getPresignedUploadUrl(key: string, contentType: string, size: number, expiresInSeconds = 3600): Promise<{ url: string; key: string }> {
+   async getPresignedUploadUrl(key: string, contentType: string, size: number, expiresInSeconds = 3600): Promise<UploadUrlResponse> {
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: key,

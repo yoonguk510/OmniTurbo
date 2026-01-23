@@ -11,7 +11,30 @@ This package is the heart of the OmniTurbo API. It defines the API contract usin
 
 ## Structure
 
-The contract is organized into routers, which group related procedures:
+The contract package is organized into two main layers:
+
+### Schema Layer (`src/schema/`)
+
+All Zod schemas and their inferred TypeScript types live here. Each schema file owns both the schema definition AND the type export:
+
+```
+src/schema/
+├── common.schema.ts   # ApiResponseSchema, PaginationSchema, SuccessResponseSchema
+├── user.schema.ts     # UserResponseSchema, UserResponse type
+├── auth.schema.ts     # Login, Register, SSO schemas + types
+└── storage.schema.ts  # Storage upload schemas + types
+```
+
+**Import types directly from schemas:**
+
+```typescript
+import type { UserResponse } from '@repo/contract/schema/user';
+import type { LoginInput, AuthResponse } from '@repo/contract/schema/auth';
+```
+
+### Contract Layer (`src/public/`, `src/user/`, `src/admin/`)
+
+Pure route definitions that import schemas from the schema layer:
 
 - `publicRouter`: For procedures that do not require authentication (e.g., login, register).
 - `userRouter`: For procedures that require a user to be authenticated (e.g., fetching profile data).
@@ -21,34 +44,80 @@ The contract is organized into routers, which group related procedures:
 
 When adding or modifying an API endpoint, the following workflow should be followed:
 
-1.  **Define the Procedure**: Open the relevant router file (e.g., `src/user/profile.contract.ts`) and define a new procedure using `oRPC` and `Zod`.
+### 1. Define Schemas (if needed)
 
-    ```typescript
-    import { orpc, zod } from '@orpc/contract';
-    import { UserResponseSchema } from '@repo/database/schemas';
+If your endpoint needs new request/response shapes, add them to the appropriate schema file:
 
-    export const profileContract = {
-      me: orpc.query({
-        summary: 'Get the current user',
-        result: UserResponseSchema,
-      }),
-      // ... other procedures
-    };
-    ```
+```typescript
+// src/schema/user.schema.ts
+import { z } from 'zod';
 
-2.  **Implement on the Server**: The NestJS `api` server will automatically pick up the new contract definition, and TypeScript will show an error until the new procedure is implemented in the corresponding controller.
+export const UpdateUserInputSchema = z.object({
+  name: z.string().min(1).optional(),
+  email: z.email().optional(),
+});
 
-3.  **Consume on the Client**: The Next.js `web` app can immediately call the new procedure with full type safety and autocompletion.
+export type UpdateUserInput = z.infer<typeof UpdateUserInputSchema>;
+```
 
-    ```tsx
-    import { orpc } from '@/lib/orpc';
-    import { useQuery } from '@tanstack/react-query';
+### 2. Define the Contract
 
-    function MyComponent() {
-      const { data } = useQuery(orpc.user.profile.me.queryOptions());
-      // `data` is fully typed as the UserResponseSchema
-    }
-    ```
+Open the relevant contract file and define the procedure using the imported schemas:
+
+```typescript
+// src/user/profile.contract.ts
+import { oc } from '@orpc/contract';
+import { ApiResponseSchema } from '../schema/common.schema.js';
+import {
+  UserResponseSchema,
+  UpdateUserInputSchema,
+} from '../schema/user.schema.js';
+
+export const profileContract = {
+  update: oc
+    .route({
+      method: 'PATCH',
+      path: '/user/me',
+      summary: 'Update user profile',
+      tags: ['User'],
+    })
+    .input(UpdateUserInputSchema)
+    .output(ApiResponseSchema(UserResponseSchema)),
+};
+```
+
+### 3. Implement on the Server
+
+The NestJS `api` server will automatically pick up the new contract definition, and TypeScript will show an error until the new procedure is implemented in the corresponding controller.
+
+### 4. Consume on the Client
+
+The Next.js `web` app can immediately call the new procedure with full type safety and autocompletion.
+
+```tsx
+import { orpc } from '@/lib/orpc';
+import { useQuery } from '@tanstack/react-query';
+
+function MyComponent() {
+  const { data } = useQuery(orpc.user.profile.me.queryOptions());
+  // `data` is fully typed as the UserResponseSchema
+}
+```
+
+## Package Exports
+
+The package uses wildcard exports for automatic schema discovery:
+
+```json
+{
+  "exports": {
+    ".": "./dist/index.js",
+    "./schema/*": "./dist/schema/*.schema.js"
+  }
+}
+```
+
+This means any new schema file (e.g., `src/schema/subscription.schema.ts`) is automatically available at `@repo/contract/schema/subscription` without modifying `package.json`.
 
 ## Generating OpenAPI Spec
 
