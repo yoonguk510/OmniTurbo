@@ -1,6 +1,7 @@
 {
     "mode": "custom",
     "dateTimeStrategy": "coerce",
+    "decimalMode": "string",
     "pureModels": true,
     "variants": {
         "pure": {
