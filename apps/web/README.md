@@ -42,3 +42,14 @@ The server will start on port `3001` by default and will hot-reload as you make 
   pnpm ui <component-name>
   ```
 - **Styling**: All components are styled using Tailwind CSS. You can customize the theme and add new styles in `packages/ui/src/styles.css` and the `tailwind.config.js` file in this directory.
+
+## API Integration
+
+### Type Safety
+
+We consume the API using the types defined in `@repo/contract`.
+
+- **Contracts**: Import contract definitions from `@repo/contract`
+- **Schemas**: If you need to validate data manually, use schemas from `@repo/contract/schema/*` or `@repo/database/schemas`.
+
+**Prefer auto-generated schemas** over manual type definitions whenever possible.

@@ -13,9 +13,11 @@ This package manages the project's database schema, client, and generated types.
 
 - **Schema File**: The source of truth for the database schema is `prisma/schema.prisma`.
 - **Generating the Client**: After any change to the `schema.prisma` file, you must regenerate the Prisma client and the Zod schemas. A convenient script is provided for this:
+
   ```bash
   pnpm --filter @repo/database db:generate
   ```
+
   This command runs `prisma generate` and then a custom `scripts/fix-imports.js` to ensure the generated Zod schemas have correct import paths.
 
 - **Applying Schema Changes**: To apply your schema changes to the database, you can use `prisma db push`:
@@ -46,3 +48,22 @@ function validateUser(user: unknown) {
   return UserResponseSchema.parse(user);
 }
 ```
+
+## Guidance: Using Zod Schemas
+
+We automatically generate Zod schemas from the Prisma schema using `prisma-zod-generator`.
+
+### Handling Decimal Fields
+
+Prisma returns `Decimal` objects (from `decimal.js`) for fields of type `Decimal`. However, our API contracts usually expect `string`.
+
+To ensure compatibility, **you must add the following annotation** to any Decimal field in `schema.prisma`:
+
+```prisma
+model Example {
+  /// @zod.custom.use(z.coerce.string())
+  price Decimal @db.Decimal(10, 2)
+}
+```
+
+This ensures `z.infer<typeof ExampleSchema>` maps `price` to `string` (via auto-coercion), allowing you to use `ExampleSchema.parse(prismaResult)` directly.

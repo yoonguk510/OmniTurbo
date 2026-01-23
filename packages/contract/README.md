@@ -126,3 +126,13 @@ To generate an `openapi.json` file from the contract, run the following command 
 ```bash
 pnpm --filter @repo/contract openapi
 ```
+
+## Best Practices
+
+### Use Auto-Generated Schemas
+
+Always prefer using the auto-generated Zod schemas from `@repo/database/schemas` instead of defining them manually.
+
+### Schema Coercion
+
+When defining response schemas, use `z.coerce` if necessary, but ideally rely on the `@zod.custom.use` annotations in the Prisma schema (see `@repo/database` README) to handle type conversions like Decimal -> String at the source.

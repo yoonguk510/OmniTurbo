@@ -19,6 +19,21 @@ generator zod {
   config   = "./config.json"
 }
 
+// ============================================
+// GUIDANCE: Handling Decimal Fields with Zod
+// ============================================
+// When using Decimal fields (e.g., price Decimal @db.Decimal(10, 2)),
+// you MUST add the following annotation to ensure Zod schemas generate
+// compatible types for API responses (string instead of Decimal object):
+//
+// /// @zod.custom.use(z.coerce.string())
+// someDecimalField Decimal
+//
+// If optional:
+// /// @zod.custom.use(z.coerce.string().optional())
+// someOptionalDecimal Decimal?
+// ============================================
+
 enum UserRole {
   USER
   ADMIN

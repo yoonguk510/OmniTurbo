@@ -58,3 +58,30 @@ All API changes must follow the **contract-first** approach:
 1.  **Define the Contract**: All new endpoints, request/response shapes, and procedures must be defined in the `@repo/contract` package.
 2.  **Implement the Controller**: Implement the newly defined contract in the relevant NestJS controller (e.g., `apps/api/src/modules/users/users.controller.ts`). The `@orpc/nest` library will provide type hints and validation based on the contract.
 3.  **Add Business Logic**: Implement the business logic for the new endpoint in the corresponding service (e.g., `users.service.ts`).
+
+## Development Guidelines
+
+### Service Layer Pattern
+
+When implementing services, **avoid using Prisma types directly** in public methods. Instead, use the Zod schemas and `.parse()` to ensure type safety and proper coercion.
+
+**❌ Bad Pattern (Manual mapping):**
+
+```typescript
+// Returning Prisma object directly which might fail validation or have incompatible types (e.g. Decimal)
+async getUser(): Promise<User> {
+  return await prisma.user.findUnique(...);
+}
+```
+
+**✅ Good Pattern (Schema parsing):**
+
+```typescript
+import { UserResponseSchema } from '@repo/contract/schema/user';
+
+async getUser(): Promise<UserResponse> {
+  const user = await prisma.user.findUnique(...);
+  // Validates and coerces (e.g. Decimal -> string) automatically
+  return UserResponseSchema.parse(user);
+}
+```

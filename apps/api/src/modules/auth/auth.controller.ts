@@ -53,11 +53,9 @@ export class AuthController {
       register: implement(contract.public.auth.register).handler(async ({ input }) => {
         try {
           const user = await this.authService.register(input);
-          // eslint-disable-next-line @typescript-eslint/no-unused-vars
-          const { password, ...result } = user;
           return {
             status: 'success',
-            data: result,
+            data: user,
           };
         } catch (error) {
           if (error instanceof Prisma.PrismaClientKnownRequestError) {

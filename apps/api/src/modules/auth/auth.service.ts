@@ -5,7 +5,6 @@ import { ConfigService } from '@nestjs/config';
 import { OAuth2Client } from 'google-auth-library';
 import { PrismaClient } from '@repo/database';
 import * as bcrypt from 'bcrypt';
-import { User, UserRole } from '@repo/database';
 import { EmailService } from '../email/email.service';
 import type { UserResponse } from '@repo/contract/schema/user';
 import type { AuthResponse } from '@repo/contract/schema/auth';
@@ -377,16 +376,7 @@ export class AuthService {
        return {
            accessToken,
            refreshToken,
-           user: {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              emailVerified: user.emailVerified,
-              image: user.image,
-              role: user.role as UserRole,
-              createdAt: user.createdAt,
-              updatedAt: user.updatedAt,
-           }
+           user,
        };
 
      } catch (e) {
